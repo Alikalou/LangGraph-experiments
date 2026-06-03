@@ -1,0 +1,21 @@
+# Python environment
+venv/
+.venv/
+Lib/
+Scripts/
+site-packages/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# IDEs
+.vscode/
+.idea/
+
+.gradio/
+travel_agent/.gradio/
+*.csv
