@@ -1,57 +1,101 @@
 # LangGraph PostgreSQL Agent
 
-A simple chatbot that allows users to query a PostgreSQL database using natural language. The application uses LangGraph and LangChain to generate SQL queries and execute them against the database through a Gradio interface.
+A chatbot that allows users to query a PostgreSQL database using natural language. The system uses **LangGraph**, **LangChain**, and **OpenAI** to translate user questions into SQL and execute them through a controlled tool layer exposed via a Gradio interface.
 
-## Features
+## 🚀 Features
 
-* Connects to a PostgreSQL database.
-* Uses an OpenAI chat model to interpret user questions.
-* Executes SQL queries through LangChain's SQL toolkit.
-* Restricts execution to `SELECT` statements only.
-* Blocks common destructive SQL commands such as `INSERT`, `UPDATE`, and `DELETE`.
-* Provides a simple web interface using Gradio.
+* Connects to a PostgreSQL database
+* Natural language → SQL generation using OpenAI models
+* LangGraph ReAct agent for tool-based reasoning
+* Read-only database access using a dedicated PostgreSQL user
+* SQL validation using `sqlparse`
+* Automatic `LIMIT` enforcement to prevent large result sets
+* Gradio-based chat interface
 
-## Requirements
+---
+
+## 🛡️ Security Model
+
+This phase follows a **defense-in-depth** approach by enforcing security at both the database and application layers.
+
+### Database Layer
+
+The application connects using a dedicated **read-only PostgreSQL user** with `SELECT` privileges only. The database account cannot modify the database, ensuring that any write operation is rejected regardless of the generated SQL.
+
+### Application Layer
+
+Before execution, every generated query is validated to ensure that:
+
+* Only a single SQL statement is allowed.
+* Only `SELECT` queries are executed.
+* SQL is parsed using `sqlparse`.
+* A `LIMIT` clause (default: 100 rows) is automatically enforced when not provided.
+
+Together, these layers provide application-level query validation and database-enforced read-only access.
+
+---
+
+## 📦 Requirements
 
 * Python 3.10+
-* PostgreSQL
+* PostgreSQL database
 * OpenAI API key
-* Langchain
 
-## Installation
-
-Install the required packages:
+### Python Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Create a `.env` file containing:
+---
+
+## ⚙️ Environment Variables
+
+Create a `.env` file in the project root:
 
 ```env
 OPENAI_API_KEY=your_openai_api_key
-DATABASE_URI=postgresql+psycopg2://username:password@host:5432/database
+DATABASE_URI=postgresql+psycopg2://readonly_user:password@host:5432/database
 ```
 
-## Running
+---
 
-Start the application with:
+## ▶️ Running the Application
 
 ```bash
 python app.py
 ```
 
-Gradio will launch a local web interface where you can ask questions about your database.
+After starting, Gradio will launch a local web interface where you can interact with your database.
 
-## Example Questions
+---
 
-* Show all tables.
-* What columns are in the students table?
+## 💬 Example Questions
+
+* Show all tables
+* What columns are in the `students` table?
 * How many rows are in each table?
+* List the latest records from `orders`
+* Count users grouped by country
 
-## Notes
+---
 
-This project wraps LangChain's `sql_db_query` tool with a simple safety check. Only queries that begin with `SELECT` are executed. Queries containing destructive SQL keywords are rejected before being sent to the database.
+## ⚙️ System Architecture
 
-The safety mechanism is intentionally simple and should not be considered sufficient for production environments.
-
+```text
+User
+  │
+  ▼
+Gradio UI
+  │
+  ▼
+LangGraph Agent
+  │
+  ▼
+SQL Validation Layer
+(sqlparse + LIMIT enforcement)
+  │
+  ▼
+PostgreSQL
+(read-only user)
+```
