@@ -2,6 +2,7 @@
 venv/
 .venv/
 Lib/
+env/
 Scripts/
 site-packages/
 
@@ -19,3 +20,6 @@ __pycache__/
 .gradio/
 travel_agent/.gradio/
 *.csv
+
+Include/
+pyvenv.cfg
